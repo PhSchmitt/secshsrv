@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="secshsrv">
+    <output-path>$PROJECT_DIR$/out/artifacts/secshsrv</output-path>
+    <root id="archive" name="secshsrv.jar">
+      <element id="module-output" name="secshsrv" />
+    </root>
+  </artifact>
+</component>
