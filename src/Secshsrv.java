@@ -23,13 +23,11 @@ public class Secshsrv {
 
     public static void main(String[] args) {
         String incomingdata = getDataFromSocket();
-        System.out.println(incomingdata);
         Integer totalNumberOfShares = extractTotalNumberOfShares(incomingdata);
         Integer numberOfSharesToCombine = extractNumberOfSharesToCombine(incomingdata);
         List<String> splitInputString = splitStringAtChar(incomingdata);
         CombineInput input = CombineInput.parse(totalNumberOfShares, numberOfSharesToCombine, splitInputString);
         CombineOutput output = input.output();
-        System.out.println(output.secret);
         System.out.println(output.showPlaintext());
     }
 
@@ -85,7 +83,6 @@ public class Secshsrv {
             //the last splitChar marks the end of the Stream
             if (i > 3 && (j < splitCharIndizes.size() - 1))
             {
-                System.out.println(incomingdata.substring(i + 1, splitCharIndizes.get(j + 1)));
                 result.add(incomingdata.substring(i + 1, splitCharIndizes.get(j + 1)));
             }
         }
@@ -154,7 +151,8 @@ public class Secshsrv {
             for (int i = 0; i < allShares.size(); i++) {
                 String shareStr = allShares.get(i);
                 BigInteger shareInt = parseBigInteger(shareStr);
-                ret.addIfNotDuplicate(new ShareInfo(i,shareInt,publicInfo));
+                //the combine implementation requires the share count to start with 1 and not 0 !!!
+                ret.addIfNotDuplicate(new ShareInfo(i + 1, shareInt, publicInfo));
             }
             if (ret.shares.size() < ret.k)
             {
