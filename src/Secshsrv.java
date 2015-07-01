@@ -79,9 +79,9 @@ public class Secshsrv {
         }
         for (int j = 0; j < splitCharIndizes.size(); j++) {
             Integer i = splitCharIndizes.get(j);
-            //don't consider the first three as they are headers: n|k|modulus|$Shares|
+            //don't consider the first two as they are headers: n|k|modulus|$Shares|
             //the last splitChar marks the end of the Stream
-            if (i > 3 && (j < splitCharIndizes.size() - 1))
+            if (i > splitCharIndizes.get(1) && (j < splitCharIndizes.size() - 1))
             {
                 result.add(incomingdata.substring(i + 1, splitCharIndizes.get(j + 1)));
             }
