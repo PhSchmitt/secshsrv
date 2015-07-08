@@ -56,15 +56,17 @@ public class Secshsrv {
 
     static Integer extractNumberOfSharesToCombine(String incomingdata)
     {
-        String tmp1 = incomingdata.substring(incomingdata.indexOf(splitCharacter)+1);
-        String tmp2 = tmp1.substring(0, tmp1.indexOf(splitCharacter));
-        return new Integer(tmp2);
+        //numberofsharestocombine (k) is on 2nd position: incomingdata=n|k|modulus|$Shares|
+        String incomingdataWithoutN = incomingdata.substring(incomingdata.indexOf(splitCharacter) + 1);
+        String kstring = incomingdataWithoutN.substring(0, incomingdataWithoutN.indexOf(splitCharacter));
+        return new Integer(kstring);
     }
 
     static Integer extractTotalNumberOfShares(String incomingdata)
     {
-        String tmp = incomingdata.substring(0, incomingdata.indexOf(splitCharacter));
-        return new Integer(tmp);
+        //totalnumberofshares (n) is on first position: incomingdata=n|k|modulus|$Shares|
+        String nstring = incomingdata.substring(0, incomingdata.indexOf(splitCharacter));
+        return new Integer(nstring);
     }
 
     static List<String> splitStringAtChar(String incomingdata)
@@ -80,6 +82,7 @@ public class Secshsrv {
         for (int j = 0; j < splitCharIndizes.size(); j++) {
             Integer i = splitCharIndizes.get(j);
             //don't consider the first two as they are headers: n|k|modulus|$Shares|
+            //extract shares out of |share0|share1|...|
             //the last splitChar marks the end of the Stream
             if (i > splitCharIndizes.get(1) && (j < splitCharIndizes.size() - 1))
             {
@@ -112,28 +115,19 @@ public class Secshsrv {
 
     public static class CombineInput
     {
-        // ==================================================
-        // instance data
-        // ==================================================
 
         private final List<ShareInfo> shares = new ArrayList<>();
-        // required arguments:
         private Integer k           = null;
         // optional:  if null, then do not use modulus
-        // default to 384-bit
-        private BigInteger modulus = SecretShare.getPrimeUsedFor384bitSecretPayload();
-
+        private BigInteger modulus = null;
         // optional: for combine, we don't need n, but you can provide it
         private Integer n           = null;
-
 
         // not an input.  used to cache the PublicInfo, so that after the first ShareInfo is
         //  created with this PublicInfo, then they are all created with the same PublicInfo
         private PublicInfo publicInfo;
 
-        // ==================================================
-        // constructors
-        // ==================================================
+        // constructor
         public static CombineInput parse(Integer totalNumberOfShares,
                                          Integer numberOfSharesNeededToCombine,
                                          //Integer modulus,
@@ -159,7 +153,6 @@ public class Secshsrv {
                 throw new SecretShareException("k set to " + ret.k + " but only " +
                         ret.shares.size() + " shares provided");
             }
-
             return ret;
         }
 
@@ -170,7 +163,6 @@ public class Secshsrv {
             {
                 if (share.getX() == add.getX())
                 {
-                    // dupe
                     if (! share.getShare().equals(add.getShare()))
                     {
                         throw new SecretShareException("share x:" + share.getX() +
@@ -203,73 +195,27 @@ public class Secshsrv {
                     "MainCombine:" + where);
         }
 
-        // ==================================================
-        // public methods
-        // ==================================================
         public CombineOutput output()
         {
             CombineOutput ret = new CombineOutput();
-            ret.combineInput = this;
 
             // it is a "copy" since it should be equal to this.publicInfo
             SecretShare.PublicInfo copyPublicInfo = constructPublicInfoFromFields("output");
-
             SecretShare secretShare = new SecretShare(copyPublicInfo);
-
             SecretShare.CombineOutput combine = secretShare.combine(shares);
-
             ret.secret = combine.getSecret();
-
             return ret;
         }
-
-        // ==================================================
-        // non public methods
-        // ==================================================
     }
 
     public static class CombineOutput
     {
         private BigInteger secret;
 
-        @SuppressWarnings("unused")
-        private SecretShare.CombineOutput combineOutput;
-        @SuppressWarnings("unused")
-        private CombineInput combineInput;
-
         public String showPlaintext() {
             return BigIntUtilities.Human.createHumanString(secret);
         }
-//        public void print(PrintStream out)
-//        {
-//            //final SecretShare.PublicInfo publicInfo = combineOutput.getPublicInfo();
-//
-//            out.println("Secret Share version " + Main.getVersionString());
-//            //field(out, "Date", publicInfo.getDate());
-//            //field(out, "UUID", publicInfo.getUuid());
-//            //field(out, "Description", publicInfo.getDescription());
-//
-//            out.println("secret.number = '" + secret + "'");
-//            String s = BigIntUtilities.Human.createHumanString(secret);
-//            out.println("secret.string = '" + s + "'");
-//
-//        }
 
-        // ==================================================
-        // instance data
-        // ==================================================
-
-        // ==================================================
-        // constructors
-        // ==================================================
-
-        // ==================================================
-        // public methods
-        // ==================================================
-
-        // ==================================================
-        // non public methods
-        // ==================================================
     }
 
 }
